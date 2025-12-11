@@ -11,11 +11,11 @@ IMAGES = {
     "dsn_sideview": "assets/goldstone_dsn_sideview.jpg"
 }
 
-P = 10.4927
+P = 19.6
 H = -1.5
 K = 0
-X_TERMINUS = 17
-Y_TERMINUS = 6.88574
+X_TERMINUS = 35
+Y_TERMINUS = 29.187
 PIXELS_PER_METER = 6.4
 
 def parabola(x: float, y: float) -> float:
@@ -33,8 +33,9 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
         self.camera.background_color = '#040b1c'
         cover = ImageMobject(IMAGES["dsn_overview"])
         cover.scale(0.5)
-        cover_location = Text(f"Found at <span fgcolor={GREEN_B}>681 North First Avenue, Barstow, CA</span>")
-        self.play(FadeIn(cover), run_time=1.6)
+        cover_location = MarkupText(f"Found at <span fgcolor='{GREEN_B}'>681 North First Avenue, Barstow, CA</span>", font_size=20)
+        cover_location.next_to(cover, DOWN, buff=0.1)
+        self.play(FadeIn(cover), FadeIn(cover_location), run_time=1.6)
         with self.voiceover("In Goldstone, California, NASA has set up a very important yet unassuming piece of infrastructure.") as v:
             self.wait(v.duration)
             self.wait(1)
@@ -48,15 +49,15 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
         dsn_sideview.scale(0.5)
         dsn_sideview.move_to(self.camera.frame)
         coordinate_plane = Axes(
-            x_range=[-X_TERMINUS+H,X_TERMINUS+H,3],
-            y_range=[-Y_TERMINUS+K,Y_TERMINUS+K,3],
+            x_range=[-X_TERMINUS+H,X_TERMINUS+H,5],
+            y_range=[-Y_TERMINUS+K,Y_TERMINUS+K,5],
             x_length=X_TERMINUS*2,
             y_length=Y_TERMINUS*2,
             color=BLUE_B,
             tips=False,
             axis_config={"include_numbers": True, "font_size": 17*10},
         )
-        coordinate_plane.scale(0.1)
+        coordinate_plane.scale(0.1*0.5)
         print(coordinate_plane.get_x_unit_size())
         print(coordinate_plane.get_y_unit_size())
         # length_brace = Brace(coordinate_plane, DOWN)
@@ -101,11 +102,11 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
             self.play(Write(focus), Write(directrix), run_time=v.duration+0.3)
         focus_label = Tex("Focus: ", f"$(0, {P})$").scale(0.5)
         focus_label.next_to(focus, RIGHT, buff=0.1)
-        directrix_label = Tex("Directrix: ", f"$y={P}$").scale(0.5)
+        directrix_label = Tex("Directrix: ", f"$y={-P+K}$").scale(0.5).shift(RIGHT*2)
         directrix_label.next_to(directrix, DOWN, buff=0.1)
         vertex_label = Tex("Vertex: ", f"$({H},{K})$").scale(0.5)
         vertex_label.move_to(vertex)
-        vertex_label.shift(3*LEFT+2*DOWN)
+        vertex_label.shift(2*LEFT+DOWN)
         for label in [focus_label, directrix_label]:
             self.play(Write(label), run_time=1.2)
         self.play(Create(vertex), Write(vertex_label), run_time=1.2)
@@ -162,9 +163,9 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
         generalization_steps = VGroup(eqn)
         general_eqn_step1 = MathTex(f"(x+{-H})(x+{-H})-{4*P}(y-{K})=0")
         generalization_steps += general_eqn_step1
-        general_eqn_step2 = MathTex(f"x^2+{-H}x+{-H}x+{H*H}-{4*P}y+{4*P}{f'({K})' if K > 0 else ''}=0")
+        general_eqn_step2 = MathTex(f"x^2+{-H}x+{-H}x+{H*H}-{4*P}y=0")
         generalization_steps += general_eqn_step2
-        general_eqn_step3 = MathTex(f"x^2-{2*H}x-{4*P}y+{4*P*(K if K != 0 else 1)+H*H}=0")
+        general_eqn_step3 = MathTex(f"x^2+{2*-H}x-{4*P}y+{H*H}=0")
         generalization_steps += general_eqn_step3
         generalization_steps.arrange(DOWN)
         generalization_steps.move_to(self.camera.frame)
@@ -189,7 +190,7 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
         eqns += eqn2
         general2 = general_eqn_step3.copy().scale(0.75)
         eqns += general2
-        eqns.arrange(RIGHT, buff=1)
+        eqns.animate.arrange(RIGHT, buff=1)
         eqns.move_to(self.camera.frame)
 
         self.play(Write(Text("STANDARD FORM").next_to(eqn2, UP)), Write(Text("GENERAL FORM").next_to(general2, UP)),
@@ -230,17 +231,21 @@ class ConicsProject(VoiceoverScene, MovingCameraScene):
         with self.voiceover("That's all for parabolas. I learned a lot during this project.") as v:
             self.wait(v.duration)
         logo = ManimBanner()
+        logo.move_to(self.camera.frame)
+        logo.scale(0.6)
+        logo_attribution = Text("Manim official banner. Used with permission under the terms of the MIT License.", font_size=19)
+        logo_attribution.next_to(logo, DOWN, buff=0.3)
 
         with self.voiceover("For instance, I familiarized myself with a new piece of animation software: Manim. " \
         "I also really have never created animated videos, so I learned a lot there too!") as v:
             time = v.duration/3
-            self.play(logo.create(), run_time=time)
-            self.play(logo.expand(), run_time=time)
+            self.play(logo.create(), FadeIn(logo_attribution), run_time=time)
+            self.play(logo.expand(), run_time=time) 
             self.wait(time)
-        
+        self.play(FadeOut(logo), FadeOut(logo_attribution), run_time=1.2)
         citations = VGroup()
-        citations += Text("\"Goldstone Deep Space Communication Complex.\". NASA, 1990.")
-        citations += Text("\"Tracks of a Giant\". NASA, 2024.")
+        citations += Text("\"Goldstone Deep Space Communication Complex.\". NASA, 1990.", font_size=20)
+        citations += Text("\"Tracks of a Giant\". NASA, 2024.", font_size=20)
         citations.arrange(DOWN, buff=0.25)
         citations.move_to(self.camera.frame)
         with self.voiceover("The images I used of the DSN station come from NASA.") as v:
